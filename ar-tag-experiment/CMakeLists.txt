@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+project("artag")
+find_package( OpenCV REQUIRED )
+add_executable(artag detect.cpp)
+target_link_libraries( artag ${OpenCV_LIBS} )

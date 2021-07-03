@@ -1,0 +1,3 @@
+/home/ashwin/Desktop/solvepnp/bin/CMakeFiles/rebuild_cache.dir
+/home/ashwin/Desktop/solvepnp/bin/CMakeFiles/SolvePNP.dir
+/home/ashwin/Desktop/solvepnp/bin/CMakeFiles/edit_cache.dir

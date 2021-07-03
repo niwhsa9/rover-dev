@@ -1,0 +1,6 @@
+1. opencv_annotation --annotations=annotations.txt --images=positive-training
+2. opencv_createsamples -info annotations-save.txt -vec positive-vec.txt
+3. printf '%s\n' "$PWD"/* > names.txt     #for negative training
+#4. opencv_traincascade -data classifier/ -vec positive-vec.txt -bg negative-list.txt 
+5. opencv_traincascade -data classifier/ -vec positive-vec.txt -bg negative-list.txt -numPos 10 -numNeg 10
+

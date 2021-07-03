@@ -1,0 +1,81 @@
+positive-training/tag_0200.jpg 1 870 316 30 31
+positive-training/tag_0201.jpg 1 815 339 32 32
+positive-training/tag_0202.jpg 1 812 332 32 37
+positive-training/tag_0203.jpg 1 803 332 27 33
+positive-training/tag_0205.jpg 2 717 340 22 32 735 341 21 32
+positive-training/tag_0206.jpg 2 681 334 22 37 698 334 26 34
+positive-training/tag_0207.jpg 1 655 346 29 34
+positive-training/tag_0208.jpg 1 579 367 28 32
+positive-training/tag_0210.jpg 1 590 352 29 31
+positive-training/tag_0211.jpg 1 605 362 29 27
+positive-training/tag_0212.jpg 1 621 377 29 27
+positive-training/tag_0213.jpg 1 630 370 30 28
+positive-training/tag_0215.jpg 1 618 330 32 26
+positive-training/tag_0216.jpg 1 651 348 24 23
+positive-training/tag_0217.jpg 1 650 327 26 23
+positive-training/tag_0218.jpg 1 642 328 24 26
+positive-training/tag_0220.jpg 1 663 321 20 25
+positive-training/tag_0221.jpg 1 689 335 21 24
+positive-training/tag_0222.jpg 1 680 312 19 23
+positive-training/tag_0223.jpg 1 715 276 19 25
+positive-training/tag_0225.jpg 0
+positive-training/tag_0226.jpg 2 769 324 17 29 784 325 17 27
+positive-training/tag_0227.jpg 2 813 327 18 27 827 324 21 31
+positive-training/tag_0228.jpg 1 836 335 18 27
+positive-training/tag_0230.jpg 1 911 307 25 39
+positive-training/tag_0231.jpg 1 923 329 36 42
+positive-training/tag_0232.jpg 1 899 342 43 47
+positive-training/tag_0233.jpg 1 883 373 48 46
+positive-training/tag_0235.jpg 1 789 363 55 50
+positive-training/tag_0236.jpg 1 776 364 65 55
+positive-training/tag_0237.jpg 1 716 385 60 58
+positive-training/tag_0238.jpg 1 655 377 59 60
+positive-training/tag_0240.jpg 1 660 422 47 58
+positive-training/tag_0241.jpg 1 687 426 42 58
+positive-training/tag_0242.jpg 2 663 417 35 50 699 421 24 46
+positive-training/tag_0243.jpg 2 696 422 28 49 667 417 27 53
+positive-training/tag_0245.jpg 1 686 447 45 53
+positive-training/tag_0246.jpg 1 687 420 43 50
+positive-training/tag_0247.jpg 1 737 390 48 50
+positive-training/tag_0248.jpg 1 753 350 48 51
+positive-training/tag_0250.jpg 1 837 298 54 52
+positive-training/tag_0251.jpg 1 862 309 56 57
+positive-training/tag_0252.jpg 1 872 300 54 55
+positive-training/tag_0253.jpg 1 853 324 47 61
+positive-training/tag_0255.jpg 2 825 326 36 59 857 326 32 58
+positive-training/tag_0256.jpg 2 824 318 38 60 798 318 25 52
+positive-training/tag_0257.jpg 1 803 338 38 53
+positive-training/tag_0258.jpg 1 872 313 56 61
+positive-training/tag_0260.jpg 1 854 311 64 63
+positive-training/tag_0261.jpg 1 853 306 67 64
+positive-training/tag_0262.jpg 1 840 305 75 69
+positive-training/tag_0263.jpg 1 830 284 78 68
+positive-training/tag_0265.jpg 1 800 316 62 69
+positive-training/tag_0266.jpg 1 789 324 66 70
+positive-training/tag_0267.jpg 1 830 314 65 75
+positive-training/tag_0268.jpg 2 838 339 52 75 886 334 37 77
+positive-training/tag_0270.jpg 2 891 341 32 81 926 339 62 83
+positive-training/tag_0271.jpg 1 913 365 77 82
+positive-training/tag_0272.jpg 1 851 371 81 73
+positive-training/tag_0273.jpg 1 762 346 91 86
+positive-training/tag_0275.jpg 1 797 392 92 96
+positive-training/tag_0276.jpg 1 786 381 94 90
+positive-training/tag_0277.jpg 1 741 385 87 98
+positive-training/tag_0278.jpg 1 780 410 79 105
+positive-training/tag_0280.jpg 2 834 391 60 100 895 399 55 91
+positive-training/tag_0281.jpg 1 862 371 88 113
+positive-training/tag_0282.jpg 1 782 343 111 125
+positive-training/tag_0283.jpg 1 746 346 133 131
+positive-training/tag_0285.jpg 1 864 378 108 129
+positive-training/tag_0286.jpg 1 986 344 108 139
+positive-training/tag_0287.jpg 2 1048 343 109 146 1155 348 74 134
+positive-training/tag_0288.jpg 2 1011 262 43 127 1067 269 94 124
+positive-training/tag_0290.jpg 1 1086 144 152 130
+positive-training/tag_0291.jpg 1 1052 347 196 143
+positive-training/tag_0292.jpg 1 943 480 164 147
+positive-training/tag_0293.jpg 1 771 402 125 146
+positive-training/tag_0295.jpg 2 516 212 45 111 451 216 65 105
+positive-training/tag_0296.jpg 2 399 146 64 96 356 151 41 86
+positive-training/tag_0297.jpg 1 259 132 89 100
+positive-training/tag_0298.jpg 1 305 261 101 99
+positive-training/tag_0300.jpg 1 292 402 103 102
