@@ -107,7 +107,7 @@ class ARTagModel:
     # creates model parameters 
     def __init__(self, device):
         self.device = device
-        self.dataset = ArTagDataset("dataset/", "labels.json", device)
+        self.dataset = ArTagDataset("dataset/", "training_labels/labels.json", device)
         
         # Create model
         self.model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True, min_size=300)
@@ -174,10 +174,15 @@ class ARTagModel:
                 ])
             imgTensor = tfm(img)
             imgTensor = imgTensor.unsqueeze(0)
-            imgTensor.to(self.device)
+            imgTensor.to(device=self.device)
+            print(self.device)
             # Run network 
             startTime = time.time()
-            boxPred = self.model(imgTensor)
+            if(self.device == torch.device('cuda')):
+                boxPred = self.model(imgTensor.cuda())
+            else:
+                boxPred = self.model(imgTensor)
+
             totalTime = time.time() - startTime
             print(totalTime)
             # Create dictionary key
@@ -187,7 +192,7 @@ class ARTagModel:
             if( len(boxPred[0]["scores"]) != 0):
                 for i in range(len(boxPred[0]["scores"])):
                     certainty = boxPred[0]["scores"][i]
-                    box = boxPred[0]["boxes"][i].detach().numpy()
+                    box = boxPred[0]["boxes"][i].cpu().detach().numpy()
                     if(certainty > 0.5):
                         # Add to dictionary 
                         data[file].append(box.tolist())
@@ -197,15 +202,16 @@ class ARTagModel:
                         
             # Write the image as requested 
             if(writeImageFlag):
-                img.save(imageWriteFolder+"/" + file.split("\\")[1], "JPEG")
+                img.save(imageWriteFolder+"/" + file.split("/")[2], "JPEG")
             if(showImageFlag):
                 img.show()
         if(writeJsonFlag):
             json.dump(data, open(imageWriteFolder+"/"+str("detections.json"), "w"))
 
 # test code     
-#dev = torch.device('cpu') 
-#model = ARTagModel(dev)
+dev = torch.device('cuda') 
+model = ARTagModel(dev)
 #model.train()
-#model.load("model-mobile.save")
-#model.test("testset2", "scratch", True, True, False, 109, -1)
+model.load("model_saves/model-mobile.save")
+model.test("data/testset2", "scratch/", True, True, False, 109, -1)
+print("Hello")
