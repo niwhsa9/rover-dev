@@ -1,0 +1,14 @@
+*.jpg
+dataset/
+percep-artag-detection-squareDetection/
+perception-files-main/
+testset/
+testset2/
+vision/
+perception-cnn-research-main/
+model.save
+scratch/
+resources/
+data/
+model_saves/
+output/
