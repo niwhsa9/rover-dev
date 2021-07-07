@@ -1,0 +1,7 @@
+[
+  {
+    "directory": "/home/ashwin/Desktop/rover-dev/point-cloud-renderer/build",
+    "command": "c++  -Ipc_viewer@exe -I. -I.. -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wnon-virtual-dtor -O0 -g -MD -MQ 'pc_viewer@exe/viewer.cpp.o' -MF 'pc_viewer@exe/viewer.cpp.o.d' -o 'pc_viewer@exe/viewer.cpp.o' -c ../viewer.cpp",
+    "file": "../viewer.cpp"
+  }
+]

@@ -209,7 +209,7 @@ class ARTagModel:
             json.dump(data, open(imageWriteFolder+"/"+str("detections.json"), "w"))
 
 # test code     
-dev = torch.device('cuda') 
+dev = torch.device('cpu') 
 model = ARTagModel(dev)
 #model.train()
 model.load("model_saves/model-mobile.save")
