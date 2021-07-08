@@ -250,7 +250,13 @@ class ARTagModel:
                 score = boxPred[0]["scores"][0]
 
                 if(score > 0.8):
-                    crop = cvIm[int(box[1]):int(box[3]), int(box[0]):int(box[2])]
+                    r_w = int(box[2]) - int(box[0])
+                    r_h = int(box[3]) - int(box[1])
+                    s = 0.5
+                    exp_y = int(s * r_h)
+                    exp_x = int(s * r_w)
+
+                    crop = cvIm[int(box[1]) - exp_y:int(box[3]) + exp_y, int(box[0]) - exp_x :int(box[2]) + exp_x]
                     crop = crop.copy()
                     cv2.rectangle(cvIm, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 0, 255), 3)
                     cv2.imshow("crop",crop)
