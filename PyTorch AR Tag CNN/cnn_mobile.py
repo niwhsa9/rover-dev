@@ -20,7 +20,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision import transforms
 from engine import train_one_epoch, evaluate
 import utils
-
+import cv2
 
 fig, ax = plt.subplots()
 
@@ -199,6 +199,7 @@ class ARTagModel:
                         # Annotate output image 
                         draw = ImageDraw.Draw(img)
                         draw.rectangle(box, outline="red", width=3)
+                    
                         
             # Write the image as requested 
             if(writeImageFlag):
@@ -208,10 +209,62 @@ class ARTagModel:
         if(writeJsonFlag):
             json.dump(data, open(imageWriteFolder+"/"+str("detections.json"), "w"))
 
+    def cvProc(self, imageInFolder, startIdx = 109, endIdx = 112):
+         # Get files in data directory starting from the startIdx image 
+        import glob, time
+        files = glob.glob(imageInFolder+"/*")
+        files.sort()
+        files = files[startIdx:endIdx]
+        print(files)
+       
+        # Process each file
+        for file in files:
+            print("Processing: " + file)
+            # Load and transform 
+            img = Image.open(file).convert("RGB")
+            tfm = transforms.Compose([
+                    transforms.ToTensor()
+                ])
+            imgTensor = tfm(img)
+            imgTensor = imgTensor.unsqueeze(0)
+            imgTensor.to(device=self.device)
+            print(self.device)
+            # Run network 
+            startTime = time.time()
+            if(self.device == torch.device('cuda')):
+                boxPred = self.model(imgTensor.cuda())
+            else:
+                boxPred = self.model(imgTensor)
+            totalTime = time.time() - startTime
+            print("neural net time: " + str(totalTime))
+
+            # Get boxes from network output
+            if( len(boxPred[0]["scores"]) != 0):
+                for i in range(len(boxPred[0]["scores"])):
+                    certainty = boxPred[0]["scores"][i]
+                    box = boxPred[0]["boxes"][i].cpu().detach().numpy()
+            
+                # cv proc
+                cvIm = cv2.imread(file)
+                box =  boxPred[0]["boxes"][0].cpu().detach().numpy()
+                score = boxPred[0]["scores"][0]
+
+                if(score > 0.8):
+                    crop = cvIm[int(box[1]):int(box[3]), int(box[0]):int(box[2])]
+                    crop = crop.copy()
+                    cv2.rectangle(cvIm, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 0, 255), 3)
+                    cv2.imshow("crop",crop)
+
+
+                cv2.imshow("img", cvIm)
+                if(cv2.waitKey(0) == 32):
+                    return
+
 # test code     
 dev = torch.device('cpu') 
 model = ARTagModel(dev)
 #model.train()
 model.load("model_saves/model-mobile.save")
-model.test("data/testset2", "scratch/", True, True, False, 109, -1)
+#model.test("data/testset2", "scratch/", True, True, False, 109, -1)
+model.cvProc("data/testset2", 109, -1)
 print("Hello")
