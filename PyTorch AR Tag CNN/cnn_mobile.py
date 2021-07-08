@@ -264,12 +264,17 @@ class ARTagModel:
                     alpha = 3.0 # Contrast control (1.0-3.0)
                     beta = 0 # Brightness control (0-100)
                     crop = cv2.convertScaleAbs(crop, alpha=alpha, beta=beta)
-                    #crop = cv2.blur(crop, (5, 5))
+
                     crop = cv2.threshold(crop, 0, 255, cv2.THRESH_BINARY)[1]
-                    crop = cv2.morphologyEx(crop, cv2.MORPH_CLOSE, (5,5))
+                    crop = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+
+                    #crop = cv2.blur(crop, (5, 5))
+                    #kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10,10))
+                    #crop = cv2.morphologyEx(crop, cv2.MORPH_CLOSE, kernel)
+
+                    cv2.imshow("crop", crop)
 
                     #edges = cv2.Canny(crop,100,200)
-                    cv2.imshow("crop", crop)
                     #cv2.imshow("egdes",edges)
                     # the morph can close edges, we can use euclidean distance from the known center of detection (just the center of crop)
                     # to pick the polygon that works (also should be largest)
