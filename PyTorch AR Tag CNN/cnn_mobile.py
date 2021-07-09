@@ -22,8 +22,6 @@ from engine import train_one_epoch, evaluate
 import utils
 import cv2
 
-fig, ax = plt.subplots()
-
 # Dataset for labeled AR Tag images
 class ArTagDataset(Dataset):
     # folder for train data, path to labels
@@ -50,25 +48,25 @@ class ArTagDataset(Dataset):
         
     # View particular item of dataloader
     def viewItem(self, idx):
-        img = Image.open(self.folder + self.labelsDict["images"][idx]["file_name"]).convert("RGB")
+        cvIm = cv2.imread(self.folder + self.labelsDict["images"][idx]["file_name"])
         labels = self.labelsByImageId[self.labelsDict["images"][idx]["id"]]
         for label in labels:
-            bbox = label["bbox"]
-            rect = patches.Rectangle((bbox[0], bbox[1]), bbox[2], bbox[3], linewidth=1, edgecolor='r', facecolor='none')
-            #print(label)
-            ax.add_patch(rect)
-        ax.imshow(img)
-    
-     # View particular item of dataloader
-    def drawPrediction(self, idx, prediction):
-        img = Image.open(self.folder + self.labelsDict["images"][idx]["file_name"]).convert("RGB")
-        labels = self.labelsByImageId[self.labelsDict["images"][idx]["id"]]
-        for label in labels:
-            bbox = prediction
-            rect = patches.Rectangle((bbox[0], bbox[1]), bbox[2]-bbox[0], bbox[3]-bbox[1], linewidth=1, edgecolor='r', facecolor='none')
-            #print(label)
-            ax.add_patch(rect)
-        ax.imshow(img)
+            box = label["bbox"]
+            print(label)
+            #rect = patches.Rectangle((bbox[0], bbox[1]), bbox[2], bbox[3], linewidth=1, edgecolor='r', facecolor='none')
+            #cv2.rectangle(cvIm, (int(box[0]), int(box[1])), (int(box[2] + box[0]), int(box[3] + box[1])), (0, 0, 255), 3)
+
+            pts = []
+            for i in range(0, len(label["segmentation"][0]), 2):
+                pts.append( [label["segmentation"][0][i], label["segmentation"][0][i+1] ] )
+                #print(pts[-1])
+            #pts = np.array(np.array(pts), dtype='int32')
+            pts = [pts]
+            pts = np.array(pts,  dtype='int32')
+            print(pts)
+            cv2.fillPoly(img=cvIm, pts=pts, color=(255, 0, 0))
+        cv2.imshow("view", cvIm)
+        #cv2.waitKey(0)
 
     def __getitem__(self, idx):
         # load image
@@ -258,6 +256,7 @@ class ARTagModel:
 
                     crop = cvIm[int(box[1]) - exp_y:int(box[3]) + exp_y, int(box[0]) - exp_x :int(box[2]) + exp_x]
                     crop = crop.copy()
+                    orig = crop.copy()
                     cv2.rectangle(cvIm, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 0, 255), 3)
 
                     # mess with crop
@@ -265,14 +264,28 @@ class ARTagModel:
                     beta = 0 # Brightness control (0-100)
                     crop = cv2.convertScaleAbs(crop, alpha=alpha, beta=beta)
 
-                    crop = cv2.threshold(crop, 0, 255, cv2.THRESH_BINARY)[1]
+                    #crop = cv2.threshold(crop, 0, 255, cv2.THRESH_BINARY)[1]
                     crop = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
 
-                    #crop = cv2.blur(crop, (5, 5))
+                    crop = cv2.blur(crop, (5, 5))
+                    crop = cv2.threshold(crop, 30, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C)[1]
+
+                    contours, hierarchy = cv2.findContours(image=crop, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
+                    
+                    best = contours[0]
+                    for cnt in contours :
+                        area = cv2.contourArea(cnt)
+                        if(area > cv2.contourArea(best)):
+                            best = cnt
+                        
+
+                    cv2.drawContours(orig, best, -1, (255, 0, 0), 3)
+
                     #kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10,10))
                     #crop = cv2.morphologyEx(crop, cv2.MORPH_CLOSE, kernel)
 
                     cv2.imshow("crop", crop)
+                    cv2.imshow("orig", orig)
 
                     #edges = cv2.Canny(crop,100,200)
                     #cv2.imshow("egdes",edges)
@@ -285,9 +298,16 @@ class ARTagModel:
 
 # test code     
 dev = torch.device('cpu') 
-model = ARTagModel(dev)
+#model = ARTagModel(dev)
 #model.train()
-model.load("model_saves/model-mobile.save")
+#model.load("model_saves/model-mobile.save")
 #model.test("data/testset2", "scratch/", True, True, False, 109, -1)
-model.cvProc("data/testset2", 109, -1)
+#model.cvProc("data/testset2", 109, -1)
 print("Hello")
+
+
+dataset = ArTagDataset("data/traindata/", "training_labels/labels.json", dev)
+i = 1
+while(cv2.waitKey(0) != 32):
+    dataset.viewItem(i)
+    i+=5 
