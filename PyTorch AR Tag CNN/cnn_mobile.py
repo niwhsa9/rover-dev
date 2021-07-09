@@ -17,6 +17,7 @@ import json
 
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from torchvision import transforms
 from engine import train_one_epoch, evaluate
 import utils
@@ -77,6 +78,7 @@ class ArTagDataset(Dataset):
         lbls = []
         areas = []
         iscrowd = []
+        masks = []
         
         # get its labels and fill out target
         imgId = self.labelsDict["images"][idx]["id"]
@@ -88,11 +90,23 @@ class ArTagDataset(Dataset):
             areas.append(label["area"])
             iscrowd.append(False)
             
+            # mask calculation
+            mask = np.zeros([img.height, img.width], dtype=np.uint8)
+            pts = []
+            for i in range(0, len(label["segmentation"][0]), 2):
+                pts.append( [label["segmentation"][0][i], label["segmentation"][0][i+1] ] )
+            pts = [pts]
+            pts = np.array(pts,  dtype='int32')
+            cv2.fillPoly(img=mask, pts=pts, color=255)
+            #cv2.imshow('debug', mask)
+            masks.append(mask)
+
         target = {}
         target["boxes"] = torch.as_tensor(boxes, dtype=torch.float32)
         target["labels"] = torch.tensor(lbls)
         target["image_id"] = torch.tensor([imgId])
         target["area"] = torch.as_tensor(areas, dtype=torch.float32)
+        target["masks"] = torch.as_tensor(masks, dtype=torch.uint8)
             
         return self.transform(img).to(self.device), target
     
@@ -105,17 +119,25 @@ class ARTagModel:
     # creates model parameters 
     def __init__(self, device):
         self.device = device
-        self.dataset = ArTagDataset("dataset/", "training_labels/labels.json", device)
+        self.dataset = ArTagDataset("data/traindata/", "training_labels/labels.json", device)
         
         # Create model
-        self.model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True, min_size=300)
+        #self.model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True, min_size=300)
         #self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True, min_size=240, max_size=400)
+        self.model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
 
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         num_classes = 2
         # fully connected layers for class prediction and bounding box regression
         # in features is output of backbone
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+
+        # ONLY FOR MASK R-CNN
+        in_features_mask = self.model.roi_heads.mask_predictor.conv5_mask.in_channels
+        hidden_layer = 256
+        self.model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask, hidden_layer, num_classes)
+
+        # send model to device (or not)
         self.model.to(self.device)
 
     # load model params from file
@@ -298,16 +320,17 @@ class ARTagModel:
 
 # test code     
 dev = torch.device('cpu') 
-#model = ARTagModel(dev)
-#model.train()
+model = ARTagModel(dev)
+model.train()
 #model.load("model_saves/model-mobile.save")
 #model.test("data/testset2", "scratch/", True, True, False, 109, -1)
 #model.cvProc("data/testset2", 109, -1)
 print("Hello")
 
 
-dataset = ArTagDataset("data/traindata/", "training_labels/labels.json", dev)
-i = 1
-while(cv2.waitKey(0) != 32):
-    dataset.viewItem(i)
-    i+=5 
+#dataset = ArTagDataset("data/traindata/", "training_labels/labels.json", dev)
+#i = 1
+#while(cv2.waitKey(0) != 32):
+    #dataset.viewItem(i)
+#    dataset[i]
+#    i+=5 
