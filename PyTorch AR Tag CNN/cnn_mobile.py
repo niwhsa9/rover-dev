@@ -122,9 +122,9 @@ class ARTagModel:
         self.dataset = ArTagDataset("data/traindata/", "training_labels/labels.json", device)
         
         # Create model
-        #self.model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True, min_size=300)
+        self.model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True, min_size=300)
         #self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True, min_size=240, max_size=400)
-        self.model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
+        #self.model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
 
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         num_classes = 2
@@ -133,9 +133,9 @@ class ARTagModel:
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
         # ONLY FOR MASK R-CNN
-        in_features_mask = self.model.roi_heads.mask_predictor.conv5_mask.in_channels
-        hidden_layer = 256
-        self.model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask, hidden_layer, num_classes)
+        #in_features_mask = self.model.roi_heads.mask_predictor.conv5_mask.in_channels
+        #hidden_layer = 256
+        #self.model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask, hidden_layer, num_classes)
 
         # send model to device (or not)
         self.model.to(self.device)
@@ -286,11 +286,10 @@ class ARTagModel:
                     beta = 0 # Brightness control (0-100)
                     crop = cv2.convertScaleAbs(crop, alpha=alpha, beta=beta)
 
-                    #crop = cv2.threshold(crop, 0, 255, cv2.THRESH_BINARY)[1]
                     crop = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
 
                     crop = cv2.blur(crop, (5, 5))
-                    crop = cv2.threshold(crop, 30, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C)[1]
+                    crop = cv2.threshold(crop, 50, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C)[1]
 
                     contours, hierarchy = cv2.findContours(image=crop, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
                     
@@ -301,14 +300,39 @@ class ARTagModel:
                             best = cnt
                         
 
+                    
                     cv2.drawContours(orig, best, -1, (255, 0, 0), 3)
+                   
+                    contourPlot = np.zeros((crop.shape[0], crop.shape[1]), dtype=np.uint8)
+                    cv2.drawContours(contourPlot, best, -1, (255, 0, 0), 3)
 
-                    #kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10,10))
-                    #crop = cv2.morphologyEx(crop, cv2.MORPH_CLOSE, kernel)
+                    lines = cv2.HoughLines(contourPlot, 1, np.pi / 180, 60, None, 0, 0, 0, 4 * np.pi / 180)
+                    import math
+                    if lines is not None:
+                        for i in range(0, len(lines)):
+                            rho = lines[i][0][0]
+                            theta = lines[i][0][1]
+                            a = math.cos(theta)
+                            b = math.sin(theta)
+                            x0 = a * rho
+                            y0 = b * rho
+                            pt1 = (int(x0 + 1000*(-b)), int(y0 + 1000*(a)))
+                            pt2 = (int(x0 - 1000*(-b)), int(y0 - 1000*(a)))
+                            cv2.line(orig, pt1, pt2, (0,0,255), 3, cv2.LINE_AA)
+
+
+                    cv2.imshow("contour", contourPlot)
+                    print(lines)
+
 
                     cv2.imshow("crop", crop)
                     cv2.imshow("orig", orig)
 
+                   ## epsilon = 0.05*cv2.arcLength(best,True)
+                   # approx = cv2.approxPolyDP(best,epsilon,True)
+                   # cv2.drawContours(orig, approx, -1, (255, 0, 0), 3)
+                    #  kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10,10))
+                  #  crop = cv2.morphologyEx(crop, cv2.MORPH_CLOSE, kernel)
                     #edges = cv2.Canny(crop,100,200)
                     #cv2.imshow("egdes",edges)
                     # the morph can close edges, we can use euclidean distance from the known center of detection (just the center of crop)
@@ -321,11 +345,11 @@ class ARTagModel:
 # test code     
 dev = torch.device('cpu') 
 model = ARTagModel(dev)
-model.train()
-#model.load("model_saves/model-mobile.save")
+#model.train()
+model.load("model_saves/model-mobile.save")
 #model.test("data/testset2", "scratch/", True, True, False, 109, -1)
-#model.cvProc("data/testset2", 109, -1)
-print("Hello")
+model.cvProc("data/testset2", 109, -1)
+#print("Hello")
 
 
 #dataset = ArTagDataset("data/traindata/", "training_labels/labels.json", dev)
