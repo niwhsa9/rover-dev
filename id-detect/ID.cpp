@@ -91,9 +91,9 @@ int main()
 
         vector< vector< Point2f > > candidates;
         vector< vector< Point > > contours;
-        cv::aruco::_detectCandidates(arMat, candidates, contours, alvarParams);
-        cout << "num candid: " << candidates.size() << endl;
-        //vector< vector< Point2f > > candidates = {{cv::Point2f(1025, 434), cv::Point2f(1091, 433), cv::Point2f(1091, 488), cv::Point2f(1027, 486)}};
+        //cv::aruco::_detectCandidates(arMat, candidates, contours, alvarParams);
+        //cout << "num candid: " << candidates.size() << endl;
+        candidates = {{cv::Point2f(1025, 434), cv::Point2f(1091, 433), cv::Point2f(1091, 488), cv::Point2f(1027, 486)}};
         //vector< vector< Point > > contours = {{cv::Point(1025, 434), cv::Point(1091, 433), cv::Point(1091, 488), cv::Point(1027, 486)}};
         //vector< vector< Point > > contours = {{cv::Point(1024, 432), cv::Point(1091, 432), cv::Point(1092, 487), cv::Point(1026, 487)}};
         //vector< int > ids;
@@ -105,6 +105,7 @@ int main()
             }
             cout << endl;
         }*/
+        /*
         for(int i = 0; i < contours.size(); i++) {
             for(int pidx = 0; pidx < contours[i].size(); pidx++) {
                 cv::Point p = contours[i][pidx];
@@ -112,10 +113,20 @@ int main()
             }
             cout << endl;
         }
-
         cv::drawContours(image, contours, 0, cv::Scalar(0, 0, 255), 3);
         cv::drawContours(image, contours, 1, cv::Scalar(0, 255, 0), 3);
         cv::drawContours(image, contours, 2, cv::Scalar(255, 0, 0), 3);
+        */
+        
+        contours = {{}};
+        for(int i = 0; i < 4; i++) {
+            cv::LineIterator it(arMat, candidates[0][i%4], candidates[0][(i+1)%4]);
+            //cout << i%4 << " to " << (i+1)%4 << " line size: " << it.count << endl;
+            for(int i = 0; i < it.count; i++, ++it) {
+                contours[0].push_back(it.pos());
+            }
+        }
+        //cv::drawContours(image, contours, 0, cv::Scalar(0, 0, 255), 3);
 
         cv::aruco::_identifyCandidates(arMat, candidates, contours, alvarDict, candidates, ids, alvarParams);
         if(ids.size() > 0) cout << "ID: " << ids[0] << endl;
