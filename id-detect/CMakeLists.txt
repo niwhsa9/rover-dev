@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+project("ID")
+find_package( OpenCV REQUIRED )
+add_executable(ID ID.cpp)
+target_link_libraries( ID ${OpenCV_LIBS} )
