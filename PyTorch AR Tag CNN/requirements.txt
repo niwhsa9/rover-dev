@@ -1,5 +1,5 @@
 actionlib==1.12.1
-angles==1.9.12
+angles==2.0
 bondpy==1.8.5
 camera-calibration==1.15.0
 camera-calibration-parsers==1.11.13
@@ -20,7 +20,7 @@ geneus==2.2.6
 genlisp==0.4.16
 genmsg==0.5.16
 gennodejs==2.0.1
-genpy==0.6.14
+genpy==2021.1
 image-geometry==1.13.0
 interactive-markers==1.11.5
 joint-state-publisher==1.12.15
@@ -31,7 +31,7 @@ matplotlib==3.4.2
 message-filters==1.14.10
 numpy==1.21.0
 opencv-python==4.5.2.54
-Pillow==8.2.0
+Pillow==8.3.1
 pkg-resources==0.0.0
 pycocotools==2.0.2
 pyparsing==2.4.7

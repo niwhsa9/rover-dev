@@ -122,9 +122,9 @@ class ARTagModel:
         self.dataset = ArTagDataset("data/traindata/", "training_labels/labels.json", device)
         
         # Create model
-        #self.model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True, min_size=300)
+        self.model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True, min_size=300)
         #self.model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True, min_size=240, max_size=400)
-        self.model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
+        #self.model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
 
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         num_classes = 2
@@ -133,9 +133,9 @@ class ARTagModel:
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
         # ONLY FOR MASK R-CNN
-        in_features_mask = self.model.roi_heads.mask_predictor.conv5_mask.in_channels
-        hidden_layer = 256
-        self.model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask, hidden_layer, num_classes)
+        #in_features_mask = self.model.roi_heads.mask_predictor.conv5_mask.in_channels
+        #hidden_layer = 256
+        #self.model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask, hidden_layer, num_classes)
 
         # send model to device (or not)
         self.model.to(self.device)
@@ -179,6 +179,7 @@ class ARTagModel:
         # Get files in data directory starting from the startIdx image 
         import glob, time
         files = glob.glob(imageInFolder+"/*")
+        files.sort()
         files = files[startIdx:endIdx]
         
         # Create empty json dictionary
@@ -196,6 +197,10 @@ class ARTagModel:
             imgTensor = imgTensor.unsqueeze(0)
             imgTensor.to(device=self.device)
             print(self.device)
+
+            cvIm = cv2.imread(file)
+
+
             # Run network 
             startTime = time.time()
             if(self.device == torch.device('cuda')):
@@ -218,9 +223,13 @@ class ARTagModel:
                         data[file].append(box.tolist())
                         # Annotate output image 
                         draw = ImageDraw.Draw(img)
-                        draw.rectangle(box, outline="red", width=3)
-                    
-                        
+                        #draw.rectangle(box, outline="red", width=3)
+                        cv2.rectangle(cvIm, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 0, 255), 3)
+
+            cv2.imshow("img", cvIm)
+            if(cv2.waitKey(0) == 32):
+                return
+
             # Write the image as requested 
             if(writeImageFlag):
                 img.save(imageWriteFolder+"/" + file.split("/")[2], "JPEG")
@@ -319,11 +328,13 @@ class ARTagModel:
                     return
 
 # test code     
-dev = torch.device('cpu') 
+dev = torch.device('cuda') 
 model = ARTagModel(dev)
-model.train()
-#model.load("model_saves/model-mobile.save")
-#model.test("data/testset2", "scratch/", True, True, False, 109, -1)
+
+print(model.model)
+#model.train()
+model.load("model_saves/model-mobile.save")
+model.test("data/testset2", "scratch/", False, False, False, 109, -1)
 #model.cvProc("data/testset2", 109, -1)
 print("Hello")
 
