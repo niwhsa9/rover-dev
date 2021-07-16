@@ -198,8 +198,17 @@ class ARTagModel:
             imgTensor.to(device=self.device)
             print(self.device)
 
+            num = file.split("/")[-1].split(".")[0]
             cvIm = cv2.imread(file)
+            depFile = "data/depth/"+str(num)+".exr"
+            print(depFile)
+            depthIm = cv2.imread(depFile,  cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
+            depthIm[np.isnan(depthIm)] = 0
+            depthIm[np.isinf(depthIm)] = 0
+            nF = np.max(depthIm)
+            depthIm *= 1.0/nF 
 
+            print(nF)
 
             # Run network 
             startTime = time.time()
@@ -227,6 +236,7 @@ class ARTagModel:
                         cv2.rectangle(cvIm, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), (0, 0, 255), 3)
 
             cv2.imshow("img", cvIm)
+            cv2.imshow("depth", depthIm)
             if(cv2.waitKey(0) == 32):
                 return
 
@@ -354,7 +364,6 @@ class ARTagModel:
 # test code     
 dev = torch.device('cuda') 
 model = ARTagModel(dev)
-<<<<<<< HEAD
 
 print(model.model)
 #model.train()
@@ -362,13 +371,6 @@ model.load("model_saves/model-mobile.save")
 model.test("data/testset2", "scratch/", False, False, False, 109, -1)
 #model.cvProc("data/testset2", 109, -1)
 print("Hello")
-=======
-#model.train()
-model.load("model_saves/model-mobile.save")
-#model.test("data/testset2", "scratch/", True, True, False, 109, -1)
-model.cvProc("data/testset2", 109, -1)
-#print("Hello")
->>>>>>> e9209c3b4ee0fceb237335a361bc12b0faa271c4
 
 
 #dataset = ArTagDataset("data/traindata/", "training_labels/labels.json", dev)
