@@ -13,9 +13,9 @@ typedef glm::vec4 vec4;
 // Point Cloud Graphics Object
 class PointCloud {
     public:
-        PointCloud() {
-            
-        }
+        PointCloud();
+
+        ///void 
 
 };
 
@@ -23,10 +23,11 @@ class PointCloud {
 class Object3D {
     public:
         Object3D();
+        Object3D(std::vector<vec3> &pts, std::vector<vec3> &colors, std::vector<int> &idcs);
         ~Object3D();
 
         // Change the underlying model 
-        void update(std::vector<vec3> pts, std::vector<vec3> colors, std::vector<int> idcs = std::vector<int>());
+        void update(std::vector<vec3> &pts, std::vector<vec3> &colors, std::vector<int> &idcs);
         void draw();
 
         // Allow rotation and translation of the underlying model
@@ -86,7 +87,9 @@ class Viewer {
         // Updates the window and draws graphics (graphics thread)
         void update();
 
-        void addObject(Object3D &obj);
+        void addObject(Object3D &obj, bool ephemeral);
+
+        void clearEphemeral();
 
     private:
         // Internals

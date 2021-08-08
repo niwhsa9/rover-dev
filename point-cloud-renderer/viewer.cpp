@@ -116,6 +116,15 @@ Object3D::Object3D() {
     glGenBuffers(1, &indiciesGPU);
 }
 
+Object3D::Object3D(std::vector<vec3> &pts, std::vector<vec3> &colors, std::vector<int> &idcs) {
+    glGenVertexArrays(1, &vaoID);
+    glGenBuffers(1, &pointsGPU);
+    glGenBuffers(1, &colorsGPU);
+    glGenBuffers(1, &indiciesGPU);
+    update(pts, colors, idcs);
+}
+
+
 void Object3D::draw() {
     glBindVertexArray(vaoID);
     //std::cout << indicies.size() << std::endl;
@@ -123,16 +132,14 @@ void Object3D::draw() {
     glBindVertexArray(0);
 }
 
-void Object3D::update(std::vector<vec3> pts, std::vector<vec3> colors, std::vector<int> idcs) {
+void Object3D::update(std::vector<vec3> &pts, std::vector<vec3> &colors, std::vector<int> &idcs) {
     // Update internal CPU representations 
     points = pts;
     colors = colors;
-    if(idcs.size() > 0) {
-        indicies = idcs;
-    } else {
-        indicies = std::vector<int>(pts.size());
-        std::iota(indicies.begin(), indicies.end(), 0);
-    }
+    indicies = idcs;
+    
+    //Provide default initialization with: ??
+    //std::iota(indicies.begin(), indicies.end(), 0);
 
     // Update GPU data for rendering 
     glBindVertexArray(vaoID);
@@ -216,7 +223,7 @@ void Viewer::update() {
     glutPostRedisplay();
 }
 
-void Viewer::addObject(Object3D &obj) {
+void Viewer::addObject(Object3D &obj, bool ephemeral) {
     objects.push_back(obj);
 }
 
@@ -229,12 +236,12 @@ int main(int argc, char **argv) {
     cout << "Hello" << endl;
     Viewer viewer(argc, argv);
 
-    Object3D obj;
+    
     vector<vec3> points = {vec3(-0.5f, 0.5f, -0.5f), vec3(0.5f, 0.5f, -0.5f), vec3(0.5f, -0.5f, 0.5f), vec3(-0.5f, -0.5f, 0.5f)};
     vector<vec3> colors = {vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f)};
     vector<int> indicies = {0, 1, 2, 3, 2, 0};
-    obj.update(points, colors, indicies);
-    viewer.addObject(obj);
+    Object3D obj(points, colors, indicies);
+    viewer.addObject(obj, false);
 
     while(true) {
         viewer.update();
