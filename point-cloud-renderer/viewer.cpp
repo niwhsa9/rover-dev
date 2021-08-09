@@ -210,13 +210,20 @@ void Viewer::update() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Draw 3D Objects
+    std::cout << objects.size() << endl;
     glUseProgram(objectShader.getProgramId());
-
     for(auto &object : objects) {
         glm::mat4 mvp_mat = camera.projection * camera.view;
         glUniformMatrix4fv(glGetUniformLocation(objectShader.getProgramId(), "u_mvpMatrix"), 1, GL_FALSE, glm::value_ptr(mvp_mat));
         object.draw();
     }
+    viewer_mutex.lock();
+    for(auto &object : ephemeralObjects) {
+        glm::mat4 mvp_mat = camera.projection * camera.view;
+        glUniformMatrix4fv(glGetUniformLocation(objectShader.getProgramId(), "u_mvpMatrix"), 1, GL_FALSE, glm::value_ptr(mvp_mat));
+        object.draw();
+    }
+    viewer_mutex.unlock();
 
     // Update display
     glutSwapBuffers();
@@ -224,9 +231,17 @@ void Viewer::update() {
 }
 
 void Viewer::addObject(Object3D &obj, bool ephemeral) {
-    objects.push_back(obj);
+    viewer_mutex.lock();
+    if(ephemeral) ephemeralObjects.push_back(obj);
+    else objects.push_back(obj);
+    viewer_mutex.unlock();
 }
 
+void Viewer::clearEphemerals() {
+    viewer_mutex.lock();
+    ephemeralObjects.clear();
+    viewer_mutex.unlock();
+}
 
 /* 
  * Main
@@ -236,14 +251,20 @@ int main(int argc, char **argv) {
     cout << "Hello" << endl;
     Viewer viewer(argc, argv);
 
-    
     vector<vec3> points = {vec3(-0.5f, 0.5f, -0.5f), vec3(0.5f, 0.5f, -0.5f), vec3(0.5f, -0.5f, 0.5f), vec3(-0.5f, -0.5f, 0.5f)};
     vector<vec3> colors = {vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f)};
-    vector<int> indicies = {0, 1, 2, 3, 2, 0};
+    vector<int> indicies = {0, 1, 2/*, 3, 2, 0*/};
     Object3D obj(points, colors, indicies);
-    viewer.addObject(obj, false);
+    //viewer.addObject(obj, false);
+
+    
+
 
     while(true) {
+        points[0].x -= 0.01f;
+        Object3D ob2(points, colors, indicies);
+        viewer.addObject(ob2, true);
         viewer.update();
+        viewer.clearEphemerals();
     }
 }

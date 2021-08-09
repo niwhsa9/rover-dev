@@ -3,12 +3,15 @@
 #include <vector>
 #include <numeric>
 #include <glm/mat4x4.hpp> 
+#include <mutex>
 
 // change this to cuda floatX types
 #include <glm/vec3.hpp> // glm::vec3
 #include <glm/vec4.hpp> // glm::vec4
 typedef glm::vec3 vec3;
 typedef glm::vec4 vec4;
+
+//class Drawable {}
 
 // Point Cloud Graphics Object
 class PointCloud {
@@ -89,14 +92,16 @@ class Viewer {
 
         void addObject(Object3D &obj, bool ephemeral);
 
-        void clearEphemeral();
+        void clearEphemerals();
 
     private:
         // Internals
         Camera camera;
         std::vector<Object3D> objects;
+        std::vector<Object3D> ephemeralObjects;
         Shader objectShader;
         std::vector<PointCloud> pointClouds;
+        std::mutex viewer_mutex;
         
 };
 
