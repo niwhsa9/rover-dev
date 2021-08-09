@@ -6,6 +6,7 @@
 
 using namespace std;
 
+// Took the shaders from the ZED code :) 
 GLchar* OBJ_VERTEX_SHADER =
 "#version 130\n"
 "in vec3 in_Vertex;\n"
@@ -23,6 +24,24 @@ GLchar* OBJ_FRAGMENT_SHADER =
 "out vec4 out_Color;\n"
 "void main() {\n"
 "   out_Color = vec4(b_color, 1);\n"
+"}";
+
+GLchar* PC_VERTEX_SHADER =
+"#version 130\n"
+"in vec4 in_Vertex;\n"
+"uniform mat4 u_mvpMatrix;\n"
+"out vec4 b_color;\n"
+"void main() {\n"
+"   b_color = vec4(1.0f, 0.0f, 0.0f, 1.f);\n"
+"	gl_Position = u_mvpMatrix * vec4(in_Vertex.xyz, 1);\n"
+"}";
+
+GLchar* PC_FRAGMENT_SHADER =
+"#version 130\n"
+"in vec4 b_color;\n"
+"out vec4 out_Color;\n"
+"void main() {\n"
+"   out_Color = b_color;\n"
 "}";
 
 /*
@@ -134,6 +153,7 @@ void Object3D::draw() {
 
 void Object3D::update(std::vector<vec3> &pts, std::vector<vec3> &colors, std::vector<int> &idcs) {
     // Update internal CPU representations 
+    // We might not actually even need this 
     points = pts;
     colors = colors;
     indicies = idcs;
@@ -169,6 +189,48 @@ Object3D::~Object3D() {
     glDeleteBuffers(1, &indiciesGPU);
 }
 
+/*
+ * Point Cloud
+ */
+
+PointCloud::PointCloud() {
+    glGenVertexArrays(1, &vaoID);
+    glGenBuffers(1, &pointsGPU);
+}
+
+PointCloud::~PointCloud() {
+    glDeleteVertexArrays(1, &vaoID);
+    glDeleteBuffers(1, &pointsGPU);
+}
+
+void PointCloud::update(std::vector<vec4> &pts) {
+    update(&pts[0], pts.size());
+}
+
+void PointCloud::update(vec4* pts, int size) {
+    this->size = size;
+
+    // Update GPU data for rendering 
+    glBindVertexArray(vaoID);
+    // Points
+    glBindBuffer(GL_ARRAY_BUFFER, pointsGPU);
+    glBufferData(GL_ARRAY_BUFFER, size*sizeof(vec4), pts, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+    // Color
+    //glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    //glEnableVertexAttribArray(0);
+    // Unbind 
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void PointCloud::draw() {
+    glBindVertexArray(vaoID);
+    glDrawArrays(GL_POINTS, 0, size);
+    glBindVertexArray(0);
+}
+
 /* 
  * Viewer
  */
@@ -190,10 +252,11 @@ Viewer::Viewer(int argc, char **argv) {
 
     // Options
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
-    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST | GL_PROGRAM_POINT_SIZE);
 
     // Shader
     objectShader = Shader(OBJ_VERTEX_SHADER, OBJ_FRAGMENT_SHADER);
+    pcShader = Shader(PC_VERTEX_SHADER, PC_FRAGMENT_SHADER);
 
     // Camera
     camera.projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
@@ -206,11 +269,10 @@ void Viewer::update() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0, 0, 0.0, 1.f);
     //glLineWidth(2.f);
-    //glPointSize(6.f); // 1, 3
+    glPointSize(6.f); // 1, 3
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Draw 3D Objects
-    std::cout << objects.size() << endl;
     glUseProgram(objectShader.getProgramId());
     for(auto &object : objects) {
         glm::mat4 mvp_mat = camera.projection * camera.view;
@@ -224,6 +286,15 @@ void Viewer::update() {
         object.draw();
     }
     viewer_mutex.unlock();
+
+    glUseProgram(pcShader.getProgramId());
+    pc_mutex.lock();
+    for (auto &pc : pointClouds) {
+        glm::mat4 mvp_mat = camera.projection * camera.view;
+        glUniformMatrix4fv(glGetUniformLocation(objectShader.getProgramId(), "u_mvpMatrix"), 1, GL_FALSE, glm::value_ptr(mvp_mat));
+        pc.draw();
+    }
+    pc_mutex.unlock();
 
     // Update display
     glutSwapBuffers();
@@ -243,6 +314,18 @@ void Viewer::clearEphemerals() {
     viewer_mutex.unlock();
 }
 
+void Viewer::updatePointCloud(int idx, vec4* pts, int size) {
+    pc_mutex.lock();
+    pointClouds[idx].update(pts, size);
+    pc_mutex.unlock();
+}
+
+void Viewer::addPointCloud() {
+    pc_mutex.lock();
+    pointClouds.push_back(PointCloud());
+    pc_mutex.unlock();
+}
+
 /* 
  * Main
  */
@@ -255,15 +338,19 @@ int main(int argc, char **argv) {
     vector<vec3> colors = {vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f)};
     vector<int> indicies = {0, 1, 2/*, 3, 2, 0*/};
     Object3D obj(points, colors, indicies);
-    //viewer.addObject(obj, false);
+    viewer.addObject(obj, false);
 
-    
+    vec4 pc[4] = {vec4(-0.5f, 0.5f, -0.5f, 1.0f), vec4(0.5f, 0.5f, -0.5f, 1.0f), vec4(0.5f, -0.5f, 0.5f, 1.0f), vec4(-0.5f, -0.5f, 0.5f, 1.0f)};
 
+    viewer.addPointCloud();
+    viewer.updatePointCloud(0, pc, 4);
 
     while(true) {
+        /*
         points[0].x -= 0.01f;
         Object3D ob2(points, colors, indicies);
-        viewer.addObject(ob2, true);
+        viewer.addObject(ob2, true); */
+
         viewer.update();
         viewer.clearEphemerals();
     }

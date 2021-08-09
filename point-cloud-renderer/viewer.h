@@ -17,9 +17,19 @@ typedef glm::vec4 vec4;
 class PointCloud {
     public:
         PointCloud();
+        ~PointCloud();
 
-        ///void 
+        void update(std::vector<vec4> &pts);
+        void update(vec4* pts, int size);
 
+        void draw();
+        // control p/r/y with mouse??
+        void setRotation(float pitch, float roll, float yaw);
+
+    private:
+        int size;
+        GLuint vaoID;
+        GLuint pointsGPU;
 };
 
 // 3D Object
@@ -36,12 +46,15 @@ class Object3D {
         // Allow rotation and translation of the underlying model
         void setTranslation(float x, float y, float z);
         void setRotation(float pitch, float roll, float yaw);
+
+        glm::mat4 getModelMat();
     
     private:
         // Model
         std::vector<vec3> points;
         std::vector<vec3> colors;
         std::vector<int> indicies;
+        float alpha; // add support for this later as a uniform
 
         // State variables
         glm::mat4 translation;
@@ -90,9 +103,18 @@ class Viewer {
         // Updates the window and draws graphics (graphics thread)
         void update();
 
+        // Add an object, either ephemeral or permanent 
         void addObject(Object3D &obj, bool ephemeral);
 
+        // Adds a point cloud
+        void addPointCloud();
+
+        // Empty the ephemeral objects array
         void clearEphemerals();
+
+        // need to provide thread safe ways to update viewer internals
+        void updatePointCloud(int idx, vec4* pts, int size);
+        void updateObjectModel(int idx, glm::mat4 rotation, glm::mat4 translation);
 
     private:
         // Internals
@@ -100,8 +122,13 @@ class Viewer {
         std::vector<Object3D> objects;
         std::vector<Object3D> ephemeralObjects;
         Shader objectShader;
+        Shader pcShader;
         std::vector<PointCloud> pointClouds;
         std::mutex viewer_mutex;
+        std::mutex pc_mutex;
+
+        // which ps is being used
+        int active_pc = -1;
         
 };
 
