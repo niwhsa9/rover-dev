@@ -38,8 +38,8 @@ GLchar* PC_VERTEX_SHADER =
 "   float r = float(q & uint(0x000000FF))/255.0f;\n"
 "   float g = float( (q & uint(0x0000FF00)) >> 8 )/255.0f;\n"
 "   float b = float( (q & uint(0x00FF0000)) >> 16)/255.0f;\n"
-"   b_color = vec4(r, g, b, 1.f);\n"
-//"   b_color = vec4(0.0f, 1.0f, 0.0f, 1.f);\n"
+//"   b_color = vec4(r, g, b, 1.f);\n"
+"   b_color = vec4(0.0f, 1.0f, 0.0f, 1.f);\n"
 "	gl_Position = u_mvpMatrix * vec4(in_Vertex.xyz, 1);\n"
 "}";
 
@@ -226,15 +226,10 @@ void PointCloud::update(vec4* pts, int size) {
     glEnableVertexAttribArray(0);
     // Color
     glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(vec4), (void*)offsetof(vec4, w));
-    cout << offsetof(vec4, w) << endl;
-    cout << sizeof(vec4) << endl;
     glEnableVertexAttribArray(1);
     // Unbind 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    cout << std::hex << *((unsigned int*)&(pts[0].w) ) << std::endl;
-    cout << std::hex << *((unsigned int*)&(pts[1].w) ) << std::endl;
 
 }
 
@@ -273,7 +268,7 @@ Viewer::Viewer(int argc, char **argv) {
 
     // Camera
     camera.projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
-    camera.view = glm::lookAt(glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    camera.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 // Viewer tick
@@ -347,16 +342,20 @@ int main(int argc, char **argv) {
     cout << "Hello" << endl;
     Viewer viewer(argc, argv);
 
-    vector<vec3> points = {vec3(-0.5f, 0.5f, -0.5f), vec3(0.5f, 0.5f, -0.5f), vec3(0.5f, -0.5f, 0.5f), vec3(-0.5f, -0.5f, 0.5f)};
+    vector<vec3> points = {vec3(-0.5f, 0.5f, -0.5f), vec3(0.5f, 0.5f, -0.5f), vec3(0.5f, -0.5f, -0.5f), vec3(-0.5f, -0.5f, -0.5f)};
     vector<vec3> colors = {vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 1.0f)};
     vector<int> indicies = {0, 1, 2/*, 3, 2, 0*/};
     Object3D obj(points, colors, indicies);
-    viewer.addObject(obj, false);
+    //viewer.addObject(obj, false);
 
-    vec4 pc[4] = {vec4(-0.5f, 0.5f, -0.5f, 9.18340948595e-41), vec4(0.5f, 0.5f, -0.5f, 3.57331108403e-43), vec4(0.5f, -0.5f, 0.5f, 9.14767637511e-41), vec4(-0.5f, -0.5f, 0.5f, 2.34184088514e-38)};
-
+    
+    //vec4 pc[4] = {vec4(-0.5f, 0.5f, -0.5f, 9.18340948595e-41), vec4(0.5f, 0.5f, -0.5f, 3.57331108403e-43), vec4(0.5f, -0.5f, -0.5f, 9.14767637511e-41), vec4(-0.5f, -0.5f, -0.5f, 2.34184088514e-38)};
+    PCDReader pcd_reader;
+    vector<vec4> pc = pcd_reader.readCloud("data/pcl28.pcd");
+    //cout << "pc size " <<  pc.size() << endl;
     viewer.addPointCloud();
-    viewer.updatePointCloud(0, pc, 4);
+    viewer.updatePointCloud(0, &pc[0], pc.size());
+    //viewer.updatePointCloud(0, pc, 4);
 
     while(true) {
         /*

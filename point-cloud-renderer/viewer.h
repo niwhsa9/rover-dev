@@ -4,6 +4,7 @@
 #include <numeric>
 #include <glm/mat4x4.hpp> 
 #include <mutex>
+#include "reader.h"
 
 // change this to cuda floatX types
 #include <glm/vec3.hpp> // glm::vec3
