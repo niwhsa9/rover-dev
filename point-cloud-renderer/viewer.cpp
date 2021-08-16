@@ -38,8 +38,8 @@ GLchar* PC_VERTEX_SHADER =
 "   float r = float(q & uint(0x000000FF))/255.0f;\n"
 "   float g = float( (q & uint(0x0000FF00)) >> 8 )/255.0f;\n"
 "   float b = float( (q & uint(0x00FF0000)) >> 16)/255.0f;\n"
-//"   b_color = vec4(r, g, b, 1.f);\n"
-"   b_color = vec4(0.0f, 1.0f, 0.0f, 1.f);\n"
+"   b_color = vec4(r, g, b, 1.f);\n"
+//"   b_color = vec4(0.0f, 1.0f, 0.0f, 1.f);\n"
 "	gl_Position = u_mvpMatrix * vec4(in_Vertex.xyz, 1);\n"
 "}";
 
@@ -267,8 +267,8 @@ Viewer::Viewer(int argc, char **argv) {
     pcShader = Shader(PC_VERTEX_SHADER, PC_FRAGMENT_SHADER);
 
     // Camera
-    camera.projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
-    camera.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    camera.projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100000.0f);
+    camera.view = glm::lookAt(glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 // Viewer tick
