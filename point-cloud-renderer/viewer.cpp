@@ -28,11 +28,18 @@ GLchar* OBJ_FRAGMENT_SHADER =
 
 GLchar* PC_VERTEX_SHADER =
 "#version 130\n"
-"in vec4 in_Vertex;\n"
+"in vec3 in_Vertex;\n"
+"in uint in_Color;\n"
 "uniform mat4 u_mvpMatrix;\n"
 "out vec4 b_color;\n"
 "void main() {\n"
-"   b_color = vec4(1.0f, 0.0f, 0.0f, 1.f);\n"
+"   uint q = in_Color;\n"
+//"   uint q = uint(0xFF0000FF);\n"
+"   float r = float(q & uint(0x000000FF))/255.0f;\n"
+"   float g = float( (q & uint(0x0000FF00)) >> 8 )/255.0f;\n"
+"   float b = float( (q & uint(0x00FF0000)) >> 16)/255.0f;\n"
+"   b_color = vec4(r, g, b, 1.f);\n"
+//"   b_color = vec4(0.0f, 1.0f, 0.0f, 1.f);\n"
 "	gl_Position = u_mvpMatrix * vec4(in_Vertex.xyz, 1);\n"
 "}";
 
@@ -215,14 +222,20 @@ void PointCloud::update(vec4* pts, int size) {
     // Points
     glBindBuffer(GL_ARRAY_BUFFER, pointsGPU);
     glBufferData(GL_ARRAY_BUFFER, size*sizeof(vec4), pts, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec4), 0);
     glEnableVertexAttribArray(0);
     // Color
-    //glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
-    //glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(vec4), (void*)offsetof(vec4, w));
+    cout << offsetof(vec4, w) << endl;
+    cout << sizeof(vec4) << endl;
+    glEnableVertexAttribArray(1);
     // Unbind 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    cout << std::hex << *((unsigned int*)&(pts[0].w) ) << std::endl;
+    cout << std::hex << *((unsigned int*)&(pts[1].w) ) << std::endl;
+
 }
 
 void PointCloud::draw() {
@@ -340,7 +353,7 @@ int main(int argc, char **argv) {
     Object3D obj(points, colors, indicies);
     viewer.addObject(obj, false);
 
-    vec4 pc[4] = {vec4(-0.5f, 0.5f, -0.5f, 1.0f), vec4(0.5f, 0.5f, -0.5f, 1.0f), vec4(0.5f, -0.5f, 0.5f, 1.0f), vec4(-0.5f, -0.5f, 0.5f, 1.0f)};
+    vec4 pc[4] = {vec4(-0.5f, 0.5f, -0.5f, 9.18340948595e-41), vec4(0.5f, 0.5f, -0.5f, 3.57331108403e-43), vec4(0.5f, -0.5f, 0.5f, 9.14767637511e-41), vec4(-0.5f, -0.5f, 0.5f, 2.34184088514e-38)};
 
     viewer.addPointCloud();
     viewer.updatePointCloud(0, pc, 4);
