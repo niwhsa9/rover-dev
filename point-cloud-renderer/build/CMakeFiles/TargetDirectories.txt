@@ -1,0 +1,3 @@
+/home/ashwin/Desktop/rover-dev/point-cloud-renderer/build/CMakeFiles/rebuild_cache.dir
+/home/ashwin/Desktop/rover-dev/point-cloud-renderer/build/CMakeFiles/viewer.dir
+/home/ashwin/Desktop/rover-dev/point-cloud-renderer/build/CMakeFiles/edit_cache.dir
