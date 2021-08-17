@@ -38,6 +38,7 @@ class PCDReader {
             float x, y, z;
             unsigned int rgba;
             while(fin >> x >> y >> z >> rgba) {
+                rgba = (rgba & 0xFF) << 16 | (rgba & 0xFF00) | (rgba & 0xFF0000) >> 16;
                 float rgba_float = *((float*) &rgba);
                 pc.push_back(vec4(x, y, z, rgba_float));
             }

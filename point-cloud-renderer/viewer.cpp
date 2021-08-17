@@ -246,8 +246,8 @@ void PointCloud::draw() {
 Viewer::Viewer(int argc, char **argv) {
     // Window stuff
     glutInit(&argc, argv);
-    int wnd_w = glutGet(GLUT_SCREEN_WIDTH);
-    int wnd_h = glutGet(GLUT_SCREEN_HEIGHT);
+    int wnd_w = 1920*0.7;//glutGet(GLUT_SCREEN_WIDTH);
+    int wnd_h = 1080*0.7;//glutGet(GLUT_SCREEN_HEIGHT);
     glutInitWindowSize(1920*0.7, 1080*0.7);
     glutInitWindowPosition(wnd_w*0.05, wnd_h*0.05);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
@@ -267,8 +267,8 @@ Viewer::Viewer(int argc, char **argv) {
     pcShader = Shader(PC_VERTEX_SHADER, PC_FRAGMENT_SHADER);
 
     // Camera
-    camera.projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100000.0f);
-    camera.view = glm::lookAt(glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    camera.projection = glm::perspective(glm::radians(45.0f), 1920.0f/1080.0f, 0.1f, 100000.0f);
+    camera.view = glm::lookAt(glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
 // Viewer tick
