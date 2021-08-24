@@ -4,6 +4,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/rotate_vector.hpp>
+
 using namespace std;
 
 // Took the shaders from the ZED code :) 
@@ -367,26 +370,42 @@ void Viewer::mouseButtonCallback(int button, int state, int x, int y) {
     }*/
     cout << "button" << endl;
 
+    curInstance->prevMouseX = x;
+    curInstance->prevMouseY = y;
+
     // wheel up
     if(button == 3) {
-        curInstance->camera.eye += 20.0f*glm::normalize(curInstance->camera.target - curInstance->camera.eye); 
+        //curInstance->camera.eye = camera.eye  
+        //curInstance->camera.eye += 40.0f*glm::normalize(curInstance->camera.target - curInstance->camera.eye); 
     } 
     // wheel down
     else if(button == 4) {
-        curInstance->camera.eye -= 20.0f*glm::normalize(curInstance->camera.target - curInstance->camera.eye); 
+        //curInstance->camera.eye -= 40.0f*glm::normalize(curInstance->camera.target - curInstance->camera.eye); 
 
     }
 
     curInstance->camera.updateView();
+
     glutPostRedisplay();
 
 }
 
 void Viewer::mouseMotionCallback(int x, int y) {
-    //cout << "mouse" << endl;
+    cout << "mouse" << endl;
     
-    //curInstance->camera.view = glm::lookAt(glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    //curInstance->prevMouseX = 0;
+    int deltaX = x - curInstance->prevMouseX;
+    int deltaY = y - curInstance->prevMouseY;
+
+    glm::vec3 lookDir = glm::normalize(curInstance->camera.target - curInstance->camera.eye);
+    lookDir = glm::rotate(lookDir, -0.001f * deltaY, glm::vec3(1.0f, 0.0f, 0.0f));
+    lookDir = glm::rotate(lookDir, 0.001f * deltaX, glm::vec3(0.0f, 1.0f, 0.0f));
+
+    curInstance->camera.target = curInstance->camera.eye + lookDir;
+
+    curInstance->camera.updateView();
+    
+    curInstance->prevMouseX = x;
+    curInstance->prevMouseY = y;
 
 }
 

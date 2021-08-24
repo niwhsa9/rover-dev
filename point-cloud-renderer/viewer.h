@@ -71,7 +71,7 @@ class Object3D {
 
 // Defines the view 
 struct Camera {
-    vec3 eye = glm::vec3(0.0f, 0.0f, -3.0f); 
+    vec3 eye = glm::vec3(0.0f, 0.0f, 5000.0f); 
     vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
 
     void updateView();

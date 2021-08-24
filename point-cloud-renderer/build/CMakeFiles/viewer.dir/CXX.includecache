@@ -29,6 +29,8 @@ glm/gtc/matrix_transform.hpp
 -
 glm/gtc/type_ptr.hpp
 -
+glm/gtx/rotate_vector.hpp
+-
 
 /home/ashwin/Desktop/rover-dev/point-cloud-renderer/viewer.h
 GL/glew.h
