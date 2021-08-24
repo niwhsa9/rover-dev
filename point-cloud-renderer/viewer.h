@@ -71,7 +71,11 @@ class Object3D {
 
 // Defines the view 
 struct Camera {
-    vec3 position;
+    vec3 eye = glm::vec3(0.0f, 0.0f, -3.0f); 
+    vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    void updateView();
+
     glm::mat4 view;
     glm::mat4 projection;
 };
@@ -132,6 +136,12 @@ class Viewer {
         int active_pc = -1;
 
         // Callbacks
-        
+        static void mouseButtonCallback(int button, int state, int x, int y);
+        static void mouseMotionCallback(int x, int y);
+        static void keyPressedCallback(unsigned char c, int x, int y);
+
+        // states 
+        int prevMouseX, prevMouseY;
+
 };
 

@@ -240,8 +240,17 @@ void PointCloud::draw() {
 }
 
 /* 
+ * Camera
+ */
+void Camera::updateView() {
+    view = glm::lookAt(eye, target, glm::vec3(0.0f, -1.0f, 0.0f));
+}
+
+/* 
  * Viewer
  */
+
+Viewer* curInstance; 
 
 Viewer::Viewer(int argc, char **argv) {
     // Window stuff
@@ -262,13 +271,21 @@ Viewer::Viewer(int argc, char **argv) {
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
     glEnable(GL_DEPTH_TEST | GL_PROGRAM_POINT_SIZE);
 
+    // Callbacks
+    cout << "creating callbacks" << endl;
+    glutMouseFunc(Viewer::mouseButtonCallback);
+    glutMotionFunc(Viewer::mouseMotionCallback);
+    //glutKeyboardFunc(keyboard);
+    cout << "callbacks created" << endl;
+    curInstance = this;
+
     // Shader
     objectShader = Shader(OBJ_VERTEX_SHADER, OBJ_FRAGMENT_SHADER);
     pcShader = Shader(PC_VERTEX_SHADER, PC_FRAGMENT_SHADER);
 
     // Camera
     camera.projection = glm::perspective(glm::radians(45.0f), 1920.0f/1080.0f, 0.1f, 100000.0f);
-    camera.view = glm::lookAt(glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    camera.updateView();
 }
 
 // Viewer tick
@@ -305,6 +322,7 @@ void Viewer::update() {
     pc_mutex.unlock();
 
     // Update display
+    glutMainLoopEvent();
     glutSwapBuffers();
     glutPostRedisplay();
 }
@@ -334,6 +352,49 @@ void Viewer::addPointCloud() {
     pc_mutex.unlock();
 }
 
+void Viewer::mouseButtonCallback(int button, int state, int x, int y) {
+    /*
+    if (button < 5) {
+        if (button < 3) {
+            currentInstance_->mouseButton_[button] = state == GLUT_DOWN;
+        } else {
+            currentInstance_->mouseWheelPosition_ += button == MOUSE_BUTTON::WHEEL_UP ? 1 : -1;
+        }
+        currentInstance_->mouseCurrentPosition_[0] = x;
+        currentInstance_->mouseCurrentPosition_[1] = y;
+        currentInstance_->previousMouseMotion_[0] = x;
+        currentInstance_->previousMouseMotion_[1] = y;
+    }*/
+    cout << "button" << endl;
+
+    // wheel up
+    if(button == 3) {
+        curInstance->camera.eye += 20.0f*glm::normalize(curInstance->camera.target - curInstance->camera.eye); 
+    } 
+    // wheel down
+    else if(button == 4) {
+        curInstance->camera.eye -= 20.0f*glm::normalize(curInstance->camera.target - curInstance->camera.eye); 
+
+    }
+
+    curInstance->camera.updateView();
+    glutPostRedisplay();
+
+}
+
+void Viewer::mouseMotionCallback(int x, int y) {
+    //cout << "mouse" << endl;
+    
+    //curInstance->camera.view = glm::lookAt(glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    //curInstance->prevMouseX = 0;
+
+}
+
+void Viewer::keyPressedCallback(unsigned char c, int x, int y) {
+    cout << "key press" << endl;
+}
+
+
 /* 
  * Main
  */
@@ -358,6 +419,7 @@ int main(int argc, char **argv) {
     //viewer.updatePointCloud(0, pc, 4);
 
     while(true) {
+        //cout << "updating" << endl;
         /*
         points[0].x -= 0.01f;
         Object3D ob2(points, colors, indicies);
