@@ -5,14 +5,24 @@
 #include <glm/mat4x4.hpp> 
 #include <mutex>
 #include "reader.h"
+#include <utility>
 
 // change this to cuda floatX types
 #include <glm/vec3.hpp> // glm::vec3
 #include <glm/vec4.hpp> // glm::vec4
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/rotate_vector.hpp>
+
 typedef glm::vec3 vec3;
 typedef glm::vec4 vec4;
 
 //class Drawable {}
+//class ClearPath
 
 // Point Cloud Graphics Object
 class PointCloud {
@@ -70,15 +80,40 @@ class Object3D {
 };
 
 // Defines the view 
-struct Camera {
-    vec3 eye = glm::vec3(0.0f, 0.0f, 5000.0f); 
-    vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
+class FirstPersonCamera {}; // TODO
 
-    void updateView();
+// TODO add support for non origin target (lazy math)
+class PointLockedCamera{
+    public:
+        PointLockedCamera(glm::mat4 projection) : projection(projection), target(glm::vec3(0.0f, 0.0f, 0.0f)), up(glm::vec3(0.0f, -1.0f, 0.0f)) {
+            eye = glm::vec3(0.0f, 0.0f, -1.0f);
+            view = glm::lookAt(eye, target, up);
+        };
 
-    glm::mat4 view;
-    glm::mat4 projection;
+        void rotateY(int deltaX) {
+            up = glm::rotate(up, 0.003f * deltaX, glm::vec3(0.0f, 1.0f, 0.0f));
+            eye = glm::rotate(eye, 0.003f * deltaX, glm::vec3(0.0f, 1.0f, 0.0f));
+            view = glm::lookAt(eye, target, up);
+        }
+
+        void rotateX(int deltaY) {
+            up = glm::rotate(up, 0.003f * deltaY, glm::vec3(1.0f, 0.0f, 0.0f));
+            eye = glm::rotate(eye, 0.003f * deltaY, glm::vec3(1.0f, 0.0f, 0.0f));
+            view = glm::lookAt(eye, target, up);
+        }
+
+        void scaleEye(float s) {
+            eye *= s;
+            view = glm::lookAt(eye, target, up);
+        }
+
+        glm::mat4 view;
+        glm::mat4 projection;
+
+    private:
+        glm::vec3 target, eye, up;
 };
+
 
 // Vertex and Frag shader, stole this straight from ZED example 
 // but this is basically the same in every OpenGL program so 
@@ -123,7 +158,7 @@ class Viewer {
 
     private:
         // Internals
-        Camera camera;
+        PointLockedCamera camera;
         std::vector<Object3D> objects;
         std::vector<Object3D> ephemeralObjects;
         Shader objectShader;
@@ -139,6 +174,7 @@ class Viewer {
         static void mouseButtonCallback(int button, int state, int x, int y);
         static void mouseMotionCallback(int x, int y);
         static void keyPressedCallback(unsigned char c, int x, int y);
+        static void keyReleasedCallback(unsigned char c, int x, int y);
 
         // states 
         int prevMouseX, prevMouseY;

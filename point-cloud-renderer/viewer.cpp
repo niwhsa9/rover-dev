@@ -245,9 +245,7 @@ void PointCloud::draw() {
 /* 
  * Camera
  */
-void Camera::updateView() {
-    view = glm::lookAt(eye, target, glm::vec3(0.0f, -1.0f, 0.0f));
-}
+
 
 /* 
  * Viewer
@@ -255,7 +253,7 @@ void Camera::updateView() {
 
 Viewer* curInstance; 
 
-Viewer::Viewer(int argc, char **argv) {
+Viewer::Viewer(int argc, char **argv) : camera(glm::perspective(glm::radians(25.0f), 1920.0f/1080.0f, 0.01f, 100000.0f)) {
     // Window stuff
     glutInit(&argc, argv);
     int wnd_w = 1920*0.7;//glutGet(GLUT_SCREEN_WIDTH);
@@ -285,17 +283,14 @@ Viewer::Viewer(int argc, char **argv) {
     // Shader
     objectShader = Shader(OBJ_VERTEX_SHADER, OBJ_FRAGMENT_SHADER);
     pcShader = Shader(PC_VERTEX_SHADER, PC_FRAGMENT_SHADER);
-
-    // Camera
-    camera.projection = glm::perspective(glm::radians(45.0f), 1920.0f/1080.0f, 0.1f, 100000.0f);
-    camera.updateView();
+    
 }
 
 // Viewer tick
 void Viewer::update() {
     // Basic drawing setup 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0, 0, 0.0, 1.f);
+    glClearColor(0.7, 0.7, 0.7, 1.f);
     //glLineWidth(2.f);
     glPointSize(6.f); // 1, 3
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -356,35 +351,22 @@ void Viewer::addPointCloud() {
 }
 
 void Viewer::mouseButtonCallback(int button, int state, int x, int y) {
-    /*
-    if (button < 5) {
-        if (button < 3) {
-            currentInstance_->mouseButton_[button] = state == GLUT_DOWN;
-        } else {
-            currentInstance_->mouseWheelPosition_ += button == MOUSE_BUTTON::WHEEL_UP ? 1 : -1;
-        }
-        currentInstance_->mouseCurrentPosition_[0] = x;
-        currentInstance_->mouseCurrentPosition_[1] = y;
-        currentInstance_->previousMouseMotion_[0] = x;
-        currentInstance_->previousMouseMotion_[1] = y;
-    }*/
-    cout << "button" << endl;
-
+    // We need to reset the previous mouse X on the click to avoid a jump in look dir
     curInstance->prevMouseX = x;
     curInstance->prevMouseY = y;
 
+
     // wheel up
     if(button == 3) {
-        //curInstance->camera.eye = camera.eye  
-        //curInstance->camera.eye += 40.0f*glm::normalize(curInstance->camera.target - curInstance->camera.eye); 
+        // curInstance->camera.setEye(lookDir * 0.75f + curInstance->camera.getTarget());
+        curInstance->camera.scaleEye(0.75f);
     } 
     // wheel down
     else if(button == 4) {
-        //curInstance->camera.eye -= 40.0f*glm::normalize(curInstance->camera.target - curInstance->camera.eye); 
+         //curInstance->camera.setEye(lookDir * 1.25f + curInstance->camera.getTarget());
+        curInstance->camera.scaleEye(1.25f);
 
     }
-
-    curInstance->camera.updateView();
 
     glutPostRedisplay();
 
@@ -396,13 +378,8 @@ void Viewer::mouseMotionCallback(int x, int y) {
     int deltaX = x - curInstance->prevMouseX;
     int deltaY = y - curInstance->prevMouseY;
 
-    glm::vec3 lookDir = glm::normalize(curInstance->camera.target - curInstance->camera.eye);
-    lookDir = glm::rotate(lookDir, -0.001f * deltaY, glm::vec3(1.0f, 0.0f, 0.0f));
-    lookDir = glm::rotate(lookDir, 0.001f * deltaX, glm::vec3(0.0f, 1.0f, 0.0f));
-
-    curInstance->camera.target = curInstance->camera.eye + lookDir;
-
-    curInstance->camera.updateView();
+    curInstance->camera.rotateX(deltaY);
+    curInstance->camera.rotateY(deltaX);
     
     curInstance->prevMouseX = x;
     curInstance->prevMouseY = y;
@@ -413,6 +390,15 @@ void Viewer::keyPressedCallback(unsigned char c, int x, int y) {
     cout << "key press" << endl;
 }
 
+/*
+void GLViewer::keyPressedCallback(unsigned char c, int x, int y) {
+    currentInstance_->keyStates_[c] = KEY_STATE::DOWN;
+    glutPostRedisplay();
+}
+
+void GLViewer::keyReleasedCallback(unsigned char c, int x, int y) {
+    currentInstance_->keyStates_[c] = KEY_STATE::UP;
+}*/
 
 /* 
  * Main
