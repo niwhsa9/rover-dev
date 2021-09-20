@@ -93,12 +93,16 @@ class PointLockedCamera{
         void rotateY(int deltaX) {
             up = glm::rotate(up, 0.003f * deltaX, glm::vec3(0.0f, 1.0f, 0.0f));
             eye = glm::rotate(eye, 0.003f * deltaX, glm::vec3(0.0f, 1.0f, 0.0f));
+            //up = glm::rotate(up, 0.003f * deltaX, up);
+            //eye = glm::rotate(eye, 0.003f * deltaX, up);
             view = glm::lookAt(eye, target, up);
         }
 
         void rotateX(int deltaY) {
-            up = glm::rotate(up, 0.003f * deltaY, glm::vec3(1.0f, 0.0f, 0.0f));
-            eye = glm::rotate(eye, 0.003f * deltaY, glm::vec3(1.0f, 0.0f, 0.0f));
+            //up = glm::rotate(up, 0.003f * deltaY, glm::cross(eye, up));
+            //eye = glm::rotate(eye, 0.003f * deltaY, glm::cross(eye, up));
+            up = glm::rotate(up, 0.003f * deltaY, glm::cross(eye, up));
+            eye = glm::rotate(eye, 0.003f * deltaY, glm::cross(eye, up));
             view = glm::lookAt(eye, target, up);
         }
 
